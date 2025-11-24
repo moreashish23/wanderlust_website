@@ -1,3 +1,7 @@
+if (process.env.NODE_ENV !== "production") {
+    require("dotenv").config();
+}
+
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
@@ -55,9 +59,9 @@ passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
 // Routes
-app.get("/", (req, res) => {
-  res.send("Wanderlust Home Page");
-});
+// app.get("/", (req, res) => {
+//   res.send("Wanderlust Home Page");
+// });
 
 app.use((req, res, next) => {
   res.locals.success = req.flash("success");

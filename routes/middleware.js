@@ -1,3 +1,9 @@
+const Listing = require("../models/listing");
+const { listingSchema } = require("../schema");
+const ExpressError = require("../utils/ExpressError");
+const { reviewSchema } = require("../schema");
+const Review = require("../models/reviews")
+
 module.exports.isLoggedIn = (req, res, next) => {
     if(!req.isAuthenticated()){
       req.session.redirectUrl = req.originalUrl;
@@ -13,3 +19,62 @@ module.exports.saveRedirectUrl = (req, res, next) => {
   }
   next();
 }
+
+module.exports.isOwner = async (req, res, next) => {
+  const { id } = req.params;
+  
+  const listing = await Listing.findById(id);
+
+  if (!listing) {
+    req.flash("error", "Listing not found!");
+    return res.redirect("/listings");
+  }
+
+  if (!listing.owner.equals(res.locals.currUser._id)) {
+    req.flash("error", "You are not the owner of this listing!");
+    return res.redirect(`/listings/${id}`);
+  }
+
+  next();
+}
+
+// ✅ Middleware for validation
+module.exports.validateListing = (req, res, next) => {
+  const { error } = listingSchema.validate(req.body);
+  if (error) {
+    const errMsg = error.details.map(el => el.message).join(",");
+    throw new ExpressError(400, errMsg);
+  } else {
+    next();
+  }
+};
+
+// 🧩 Validation Middleware
+module.exports.validateReview = (req, res, next) => {
+  const { error } = reviewSchema.validate(req.body);
+  if (error) {
+    const errMsg = error.details.map(el => el.message).join(",");
+    throw new ExpressError(400, errMsg);
+  } else {
+    next();
+  }
+};
+
+//For delete review by author
+module.exports.isReviewAuthor = async (req, res, next) => {
+  const { id, reviewId } = req.params;
+
+  const review = await Review.findById(reviewId);
+
+  if (!review) {
+    req.flash("error", "Review not found!");
+    return res.redirect(`/listings/${id}`);
+  }
+
+  if (!review.author.equals(res.locals.currUser._id)) {
+    req.flash("error", "You are not the author of this review!");
+    return res.redirect(`/listings/${id}`);
+  }
+
+  next();
+};
