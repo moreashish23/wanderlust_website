@@ -1,6 +1,7 @@
 if (process.env.NODE_ENV !== "production") {
-    require("dotenv").config();
+  require("dotenv").config();
 }
+
 
 const express = require("express");
 const app = express();
@@ -17,15 +18,17 @@ const flash = require("connect-flash");
 const passport = require("passport");
 const localStrategy = require("passport-local");
 const User = require("./models/user");
+const MongoStore = require("connect-mongo");
 
-const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
+// const MONGO_URL = "mongodb://127.0.0.1:27017/wanderlust";
+const dbUrl = process.env.ATLASDB_URL;
 
 main()
   .then(() => console.log("Connected to MongoDB"))
   .catch((err) => console.log(err));
 
 async function main() {
-  await mongoose.connect(MONGO_URL);
+  await mongoose.connect(dbUrl);
 }
 
 // Middleware setup
@@ -36,8 +39,23 @@ app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
 app.use(express.static(path.join(__dirname, "/public")));
 
+
+const store = MongoStore.create({
+    mongoUrl: process.env.ATLASDB_URL,
+    crypto: {
+        secret: process.env.SECRET
+    },
+    touchAfter: 24 * 3600,
+});
+
+store.on("error", (e) => {
+    console.log("SESSION STORE ERROR:", e);
+});
+
+
 const sessionOptions = {
-  secret: "mysupersecretstring", 
+  store,
+  secret: process.env.SECRET, 
   resave:false,
   saveUninitialized:true, 
   cookie: {
@@ -88,15 +106,20 @@ app.use("/", userRoutes);
 
 
 // 404 Handler
-app.all(/.*/, (req, res, next) => {
-  next(new ExpressError(404, "Page Not Found!"));
+app.get(/.*/, (req, res) => {
+  res.status(404).send("Page Not Found");
 });
+
 
 // Error Handler
 app.use((err, req, res, next) => {
+  if (res.headersSent) {
+    return next(err);
+  }
   const { status = 500, message = "Something went wrong!" } = err;
   res.status(status).render("error.ejs", { message });
 });
+
 
 app.listen(3000, () => {
   console.log("Server running on port 3000");
