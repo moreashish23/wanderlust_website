@@ -1,0 +1,78 @@
+# -------------------------
+# Node
+# -------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json
+bun.lockb
+
+# -------------------------
+# Environment files
+# -------------------------
+.env
+.env.local
+.env.*.local
+
+# -------------------------
+# Build / Output
+# -------------------------
+dist/
+build/
+.next/
+out/
+
+# -------------------------
+# Logs
+# -------------------------
+logs/
+*.log
+*.log.*
+debug.log
+
+# -------------------------
+# OS files
+# -------------------------
+.DS_Store
+Thumbs.db
+
+# -------------------------
+# VS Code
+# -------------------------
+.vscode/
+.history/
+
+# -------------------------
+# Temporary files
+# -------------------------
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# -------------------------
+# React specific
+# -------------------------
+.cache/
+.parcel-cache/
+public/static/
+
+# -------------------------
+# MongoDB
+# -------------------------
+dump/
+*.bson
+*.lock
+
+# -------------------------
+# TypeScript
+# -------------------------
+*.tsbuildinfo
+
+# -------------------------
+# Misc
+# -------------------------
+.idea/
+*.iml
